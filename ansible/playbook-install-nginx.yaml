@@ -1,0 +1,63 @@
+- name: Install Nginx
+  hosts: myhosts
+  tasks:
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    # - name: Install Nginx
+    #   ansible.builtin.script:
+    #     cmd: ./nginx_install.sh
+
+    # sudo apt update && sudo apt install nginx
+    - name: Install Nginx
+      become: true
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    # tạo folder trước
+    - name: Create nginx ssl directory
+      become: true
+      ansible.builtin.file:
+        path: /etc/nginx/ssl
+        state: directory
+        owner: root
+        group: root
+        mode: "777"
+
+    # copy SSL crt
+    - name: Copy file SSL crt
+      become: true
+      ansible.builtin.copy:
+        src: ./files/bihouse.win.crt
+        dest: /etc/nginx/ssl/bihouse.win.crt
+        owner: root
+        group: root
+        mode: "777"
+
+    # copy SSL key
+    - name: Copy file SSL key
+      become: true
+      ansible.builtin.copy:
+        src: ./files/bihouse.win.key
+        dest: /etc/nginx/ssl/bihouse.win.key
+        owner: root
+        group: root
+        mode: "777"
+
+    - name: Check Status Nginx
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Deploy index.html
+      become: true
+      ansible.builtin.copy:
+        src: ./files/index.html
+        dest: /index.html
+        owner: root
+        group: root
+        mode: "777"
